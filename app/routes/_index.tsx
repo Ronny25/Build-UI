@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { redirect, type ActionFunctionArgs } from '@remix-run/node';
-import { useFetcher } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { PrismaClient } from '@prisma/client';
 import { format } from 'date-fns/format';
 
@@ -36,7 +36,18 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect('/');
 }
 
+export async function loader() {
+  const db = new PrismaClient();
+
+  const entries = await db.entry.findMany();
+
+  await db.$disconnect();
+
+  return entries;
+}
+
 export default function Index() {
+  const entries = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -131,6 +142,12 @@ export default function Index() {
           Week of April 14<sup>th</sup>
         </p>
       </div>
+
+      {entries?.map((entry) => (
+        <p key={entry.id}>
+          {entry.type} - {entry.text}
+        </p>
+      ))}
 
       <div className="mt-3 space-y-4">
         <div>
