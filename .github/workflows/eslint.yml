@@ -1,0 +1,23 @@
+name: Lint
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  ESlinter_JS:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@master
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.12.2'
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
