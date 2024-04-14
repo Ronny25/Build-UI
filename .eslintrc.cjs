@@ -71,6 +71,8 @@ module.exports = {
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/no-import-type-side-effects": "error",
         "import/no-duplicates": ["error", { "prefer-inline": true }],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"],
       },
       extends: [
         "plugin:@typescript-eslint/recommended",

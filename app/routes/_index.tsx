@@ -1,8 +1,4 @@
-import {
-  type MetaFunction,
-  redirect,
-  type ActionFunctionArgs,
-} from "@remix-run/node";
+import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
 
@@ -14,19 +10,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (
     typeof date !== "string" ||
+    !Date.parse(date) ||
     typeof category !== "string" ||
     typeof text !== "string"
   ) {
-    throw new Error("Invalid data");
+    throw new Response("Invalid data", { status: 400 });
   }
 
-  await db.entry.create({
-    data: {
-      date: new Date(date),
-      type: category,
-      text,
-    },
-  });
+  try {
+    await db.entry.create({
+      data: {
+        date: new Date(date),
+        type: category,
+        text,
+      },
+    });
+  } finally {
+    await db.$disconnect();
+  }
 
   return redirect("/");
 }
