@@ -8,16 +8,17 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  ESlinter_JS:
+  ESlint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@master
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20.12.2'
+          node-version: 20
+          check-latest: true
+          cache: 'npm'
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run ESLint
         run: npm run lint
