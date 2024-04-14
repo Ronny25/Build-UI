@@ -1,22 +1,33 @@
-import {
-  type MetaFunction,
-  redirect,
-  type ActionFunctionArgs,
-} from "@remix-run/node";
+import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
-};
+import { PrismaClient } from "@prisma/client";
 
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const json = Object.fromEntries(formData);
+  const db = new PrismaClient();
 
-  console.log(json);
+  const formData = await request.formData();
+  const { date, category, text } = Object.fromEntries(formData);
+
+  if (
+    typeof date !== "string" ||
+    !Date.parse(date) ||
+    typeof category !== "string" ||
+    typeof text !== "string"
+  ) {
+    throw new Response("Invalid data", { status: 400 });
+  }
+
+  try {
+    await db.entry.create({
+      data: {
+        date: new Date(date),
+        type: category,
+        text,
+      },
+    });
+  } finally {
+    await db.$disconnect();
+  }
 
   return redirect("/");
 }
