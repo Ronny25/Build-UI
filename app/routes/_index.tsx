@@ -1,27 +1,27 @@
-import { redirect, type ActionFunctionArgs } from "@remix-run/node";
-import { Form } from "@remix-run/react";
-import { PrismaClient } from "@prisma/client";
+import { redirect, type ActionFunctionArgs } from '@remix-run/node';
+import { useFetcher } from '@remix-run/react';
+import { PrismaClient } from '@prisma/client';
 
 export async function action({ request }: ActionFunctionArgs) {
   const db = new PrismaClient();
 
   const formData = await request.formData();
-  const { date, category, text } = Object.fromEntries(formData);
+  const { date, type, text } = Object.fromEntries(formData);
 
   if (
-    typeof date !== "string" ||
+    typeof date !== 'string' ||
     !Date.parse(date) ||
-    typeof category !== "string" ||
-    typeof text !== "string"
+    typeof type !== 'string' ||
+    typeof text !== 'string'
   ) {
-    throw new Response("Invalid data", { status: 400 });
+    throw new Response('Invalid data', { status: 400 });
   }
 
   try {
     await db.entry.create({
       data: {
         date: new Date(date),
-        type: category,
+        type,
         text,
       },
     });
@@ -29,10 +29,12 @@ export async function action({ request }: ActionFunctionArgs) {
     await db.$disconnect();
   }
 
-  return redirect("/");
+  return redirect('/');
 }
 
 export default function Index() {
+  const fetcher = useFetcher();
+
   return (
     <div className="p-10">
       <h1 className="text-5xl">Work Journal</h1>
@@ -41,12 +43,17 @@ export default function Index() {
       </p>
 
       <div className="my-8 border p-3">
-        <Form method="post">
+        <fetcher.Form method="post">
           <p className="italic">Create an entry</p>
 
           <div>
             <div className="mt-4">
-              <input className="text-gray-700" type="date" name="date" />
+              <input
+                className="text-gray-700"
+                type="date"
+                name="date"
+                required
+              />
             </div>
 
             <div className="mt-2 space-x-6">
@@ -54,8 +61,9 @@ export default function Index() {
                 <input
                   className="mr-1"
                   type="radio"
-                  name="category"
+                  name="type"
                   value="work"
+                  required
                 />
                 Work
               </label>
@@ -63,7 +71,7 @@ export default function Index() {
                 <input
                   className="mr-1"
                   type="radio"
-                  name="category"
+                  name="type"
                   value="learning"
                 />
                 Learning
@@ -72,7 +80,7 @@ export default function Index() {
                 <input
                   className="mr-1"
                   type="radio"
-                  name="category"
+                  name="type"
                   value="interesting-thing"
                 />
                 Interesting thing
@@ -84,6 +92,7 @@ export default function Index() {
                 className="w-full text-gray-700"
                 name="text"
                 placeholder="Write your entry..."
+                required
               />
             </div>
 
@@ -92,11 +101,11 @@ export default function Index() {
                 className="bg-blue-500 px-4 py-1 font-medium text-white"
                 type="submit"
               >
-                Save
+                {fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
-        </Form>
+        </fetcher.Form>
       </div>
 
       <div className="mt-6">
