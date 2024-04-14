@@ -79,6 +79,9 @@ module.exports = {
         'plugin:import/recommended',
         'plugin:import/typescript',
       ],
+      parserOptions: {
+        project: ['./tsconfig.json'],
+      },
     },
 
     // Node
