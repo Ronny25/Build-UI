@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { useFetcher } from '@remix-run/react';
 import { PrismaClient } from '@prisma/client';
+import { format } from 'date-fns/format';
 
 export async function action({ request }: ActionFunctionArgs) {
   const db = new PrismaClient();
@@ -18,6 +20,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
+    await new Promise((res) => setTimeout(res, 1000));
+
     await db.entry.create({
       data: {
         date: new Date(date),
@@ -34,6 +38,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function Index() {
   const fetcher = useFetcher();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (fetcher.state === 'idle' && textareaRef.current) {
+      textareaRef.current.value = '';
+      textareaRef.current.focus();
+    }
+  }, [fetcher.state]);
 
   return (
     <div className="p-10">
@@ -46,12 +58,16 @@ export default function Index() {
         <fetcher.Form method="post">
           <p className="italic">Create an entry</p>
 
-          <div>
-            <div className="mt-4">
+          <fieldset
+            className="disabled:opacity-70"
+            disabled={fetcher.state === 'submitting'}
+          >
+            <div className="mt-2">
               <input
                 className="text-gray-700"
                 type="date"
                 name="date"
+                defaultValue={format(new Date(), 'yyyy-MM-dd')}
                 required
               />
             </div>
@@ -63,6 +79,7 @@ export default function Index() {
                   type="radio"
                   name="type"
                   value="work"
+                  defaultChecked
                   required
                 />
                 Work
@@ -89,6 +106,7 @@ export default function Index() {
 
             <div className="mt-2">
               <textarea
+                ref={textareaRef}
                 className="w-full text-gray-700"
                 name="text"
                 placeholder="Write your entry..."
@@ -104,7 +122,7 @@ export default function Index() {
                 {fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
               </button>
             </div>
-          </div>
+          </fieldset>
         </fetcher.Form>
       </div>
 
