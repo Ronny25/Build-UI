@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { PrismaClient } from '@prisma/client';
 import { redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import { PrismaClient } from '@prisma/client';
-import { format } from 'date-fns/format';
+import { format, parseISO, startOfWeek } from 'date-fns';
+import { useEffect, useRef } from 'react';
 
 export async function action({ request }: ActionFunctionArgs) {
   const db = new PrismaClient();
@@ -43,13 +43,47 @@ export async function loader() {
 
   await db.$disconnect();
 
-  return entries;
+  return entries.map((entry) => ({
+    ...entry,
+    date: entry.date.toISOString().substring(0, 10),
+  }));
 }
 
 export default function Index() {
   const entries = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const entriesByWeek = entries.reduce<Record<string, typeof entries>>(
+    (memo, entry) => {
+      const monday = startOfWeek(parseISO(entry.date), { weekStartsOn: 1 });
+      const mondayString = format(monday, 'yyyy-MM-dd');
+
+      memo[mondayString] ||= [];
+      memo[mondayString]?.push(entry);
+
+      return memo;
+    },
+    {},
+  );
+
+  const weeks = Object.keys(entriesByWeek)
+    .sort((a, b) => a.localeCompare(b))
+    .map((dateString) => ({
+      dateString,
+      work:
+        entriesByWeek[dateString]?.filter((entry) => entry.type === 'work') ??
+        [],
+      learnings:
+        entriesByWeek[dateString]?.filter(
+          (entry) => entry.type === 'learning',
+        ) ?? [],
+      interestingThings:
+        entriesByWeek[dateString]?.filter(
+          (entry) => entry.type === 'interesting-thing',
+        ) ?? [],
+    }));
+  console.log(weeks);
 
   useEffect(() => {
     if (fetcher.state === 'idle' && textareaRef.current) {
@@ -137,40 +171,46 @@ export default function Index() {
         </fetcher.Form>
       </div>
 
-      <div className="mt-6">
-        <p className="font-bold">
-          Week of April 14<sup>th</sup>
-        </p>
-      </div>
-
-      {entries?.map((entry) => (
-        <p key={entry.id}>
-          {entry.type} - {entry.text}
-        </p>
-      ))}
-
-      <div className="mt-3 space-y-4">
-        <div>
-          <p>Work</p>
-          <ul className="ml-8 list-disc">
-            <li>First item</li>
-            <li>Second Item</li>
-          </ul>
-        </div>
-        <div>
-          <p>Learnings</p>
-          <ul className="ml-8 list-disc">
-            <li>First item</li>
-            <li>Second Item</li>
-          </ul>
-        </div>
-        <div>
-          <p>Interesting things</p>
-          <ul className="ml-8 list-disc">
-            <li>First item</li>
-            <li>Second Item</li>
-          </ul>
-        </div>
+      <div className="mt-12 space-y-12">
+        {weeks.map((week) => (
+          <div key={week.dateString}>
+            <p className="font-bold">
+              Week of {format(parseISO(week.dateString), 'MMMM do')}
+            </p>
+            <div className="mt-3 space-y-4">
+              {week.work.length > 0 && (
+                <div>
+                  <p>Work</p>
+                  <ul className="ml-8 list-disc">
+                    {week.work.map((entry) => (
+                      <li key={entry.id}>{entry.text}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {week.learnings.length > 0 && (
+                <div>
+                  <p>Learnings</p>
+                  <ul className="ml-8 list-disc">
+                    {week.learnings.map((entry) => (
+                      <li key={entry.id}>{entry.text}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {week.interestingThings.length > 0 && (
+                <div>
+                  <p>Interesting things</p>
+                  <ul className="ml-8 list-disc">
+                    {week.interestingThings.map((entry) => (
+                      <li key={entry.id}>{entry.text}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
