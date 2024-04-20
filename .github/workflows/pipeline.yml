@@ -1,4 +1,4 @@
-name: Geberal Pipeline
+name: General Pipeline
 on:
   push:
     branches:
