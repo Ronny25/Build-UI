@@ -3,8 +3,9 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
 import { Form, redirect, useLoaderData } from '@remix-run/react';
 import type { FormEvent } from 'react';
 import { EntryForm } from '~/components/entry-form';
+import { getSession } from '~/session';
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   if (typeof params.entryId !== 'string') {
     throw new Response('Not found', { status: 404 });
   }
@@ -19,6 +20,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!entry) {
     throw new Response('Not found', { status: 404 });
+  }
+
+  const session = await getSession(request.headers.get('Cookie'));
+  if (session.data.isAdmin !== true) {
+    throw new Response('Not authenticated', { status: 401 });
   }
 
   return {
