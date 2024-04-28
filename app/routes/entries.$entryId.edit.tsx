@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { redirect, useLoaderData } from '@remix-run/react';
+import { Form, redirect, useLoaderData } from '@remix-run/react';
+import type { FormEvent } from 'react';
 import { EntryForm } from '~/components/entry-form';
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -34,7 +35,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const db = new PrismaClient();
 
   const formData = await request.formData();
-  const { date, type, text } = Object.fromEntries(formData);
+  const { _action, date, type, text } = Object.fromEntries(formData);
+
+  await new Promise((res) => setTimeout(res, 1000));
+
+  if (_action === 'delete') {
+    await db.entry.delete({
+      where: { id: Number(params.entryId) },
+    });
+
+    await db.$disconnect();
+
+    return redirect('/');
+  }
 
   if (
     typeof date !== 'string' ||
@@ -46,8 +59,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   try {
-    await new Promise((res) => setTimeout(res, 1000));
-
     await db.entry.update({
       where: { id: Number(params.entryId) },
       data: {
@@ -66,11 +77,29 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function EditEntryPage() {
   const entry = useLoaderData<typeof loader>();
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!confirm('Are you sure?')) {
+      event.preventDefault();
+    }
+  }
+
   return (
     <div className="mt-4">
       <p>Editing entry {entry.id}</p>
       <div className="mt-8">
         <EntryForm entry={entry} />
+      </div>
+
+      <div className="mt-8">
+        <Form method="post" onSubmit={handleSubmit}>
+          <button
+            className="text-gray-500 underline"
+            name="_action"
+            value="delete"
+          >
+            Delete this entry...
+          </button>
+        </Form>
       </div>
     </div>
   );
