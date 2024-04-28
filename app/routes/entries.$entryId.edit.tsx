@@ -7,7 +7,7 @@ import { getSession } from '~/session';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   if (typeof params.entryId !== 'string') {
-    throw new Response('Not found', { status: 404 });
+    throw new Response('Not found', { status: 404, statusText: 'Not found' });
   }
 
   const db = new PrismaClient();
@@ -19,12 +19,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   await db.$disconnect();
 
   if (!entry) {
-    throw new Response('Not found', { status: 404 });
+    throw new Response('Not found', { status: 404, statusText: 'Not found' });
   }
 
   const session = await getSession(request.headers.get('Cookie'));
   if (session.data.isAdmin !== true) {
-    throw new Response('Not authenticated', { status: 401 });
+    throw new Response('Not authenticated', {
+      status: 401,
+      statusText: 'Not authenticated',
+    });
   }
 
   return {
@@ -36,11 +39,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
   if (session.data.isAdmin !== true) {
-    throw new Response('Not authenticated', { status: 401 });
+    throw new Response('Not authenticated', {
+      status: 401,
+      statusText: 'Not authenticated',
+    });
   }
 
   if (typeof params.entryId !== 'string') {
-    throw new Response('Not found', { status: 404 });
+    throw new Response('Not found', { status: 404, statusText: 'Not found' });
   }
 
   const db = new PrismaClient();
