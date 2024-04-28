@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { redirect, type ActionFunctionArgs } from '@remix-run/node';
-import { Link, useFetcher, useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData } from '@remix-run/react';
 import { format, parseISO, startOfWeek } from 'date-fns';
-import { useEffect, useRef } from 'react';
+import { EntryForm } from '~/components/entry-form';
 
 export async function action({ request }: ActionFunctionArgs) {
   const db = new PrismaClient();
@@ -51,8 +51,6 @@ export async function loader() {
 
 export default function Index() {
   const entries = useLoaderData<typeof loader>();
-  const fetcher = useFetcher();
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const entriesByWeek = entries.reduce<Record<string, typeof entries>>(
     (memo, entry) => {
@@ -84,85 +82,12 @@ export default function Index() {
         ) ?? [],
     }));
 
-  useEffect(() => {
-    if (fetcher.state === 'idle' && textareaRef.current) {
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    }
-  }, [fetcher.state]);
-
   return (
     <div>
       <div className="my-8 border p-3">
         <p className="italic">Create an entry</p>
 
-        <fetcher.Form method="post">
-          <fieldset
-            className="disabled:opacity-70"
-            disabled={fetcher.state === 'submitting'}
-          >
-            <div className="mt-2">
-              <input
-                className="text-gray-700"
-                type="date"
-                name="date"
-                defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                required
-              />
-            </div>
-
-            <div className="mt-2 space-x-6">
-              <label>
-                <input
-                  className="mr-1"
-                  type="radio"
-                  name="type"
-                  value="work"
-                  defaultChecked
-                  required
-                />
-                Work
-              </label>
-              <label>
-                <input
-                  className="mr-1"
-                  type="radio"
-                  name="type"
-                  value="learning"
-                />
-                Learning
-              </label>
-              <label>
-                <input
-                  className="mr-1"
-                  type="radio"
-                  name="type"
-                  value="interesting-thing"
-                />
-                Interesting thing
-              </label>
-            </div>
-
-            <div className="mt-2">
-              <textarea
-                ref={textareaRef}
-                className="w-full text-gray-700"
-                name="text"
-                placeholder="Write your entry..."
-                required
-              />
-            </div>
-
-            <div className="mt-1 text-right">
-              <button
-                className="bg-blue-500 px-4 py-1 font-medium text-white"
-                type="submit"
-              >
-                {fetcher.state === 'submitting' ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </fieldset>
-        </fetcher.Form>
+        <EntryForm />
       </div>
 
       <div className="mt-12 space-y-12">
