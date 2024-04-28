@@ -10,6 +10,11 @@ import { EntryForm } from '~/components/entry-form';
 import { getSession } from '~/session';
 
 export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+  if (session.data.isAdmin !== true) {
+    throw new Response('Not authenticated', { status: 401 });
+  }
+
   const db = new PrismaClient();
 
   const formData = await request.formData();
