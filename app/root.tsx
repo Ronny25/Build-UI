@@ -6,8 +6,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
   redirect,
   useLoaderData,
+  useRouteError,
 } from '@remix-run/react';
 import type {
   ActionFunctionArgs,
@@ -79,6 +81,28 @@ export default function App() {
         )}
       </div>
       <Outlet />
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  return (
+    <div className="h-screen">
+      <div className="flex h-full flex-col items-center justify-center">
+        <p className="text-3xl">Whoops!</p>
+
+        {isRouteErrorResponse(error) ? (
+          <p>
+            {error.status} - {error.statusText}
+          </p>
+        ) : error instanceof Error ? (
+          <p>{error.message}</p>
+        ) : (
+          <p>Unknown error</p>
+        )}
+      </div>
     </div>
   );
 }
