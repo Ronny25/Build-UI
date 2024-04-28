@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <div className="mt-8">
       {data.isAdmin ? (
-        <p>You're signed in!</p>
+        <p>You&apos;re signed in!</p>
       ) : (
         <Form method="post">
           <input
