@@ -1,8 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { redirect, type ActionFunctionArgs } from '@remix-run/node';
+import {
+  redirect,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { format, parseISO, startOfWeek } from 'date-fns';
 import { EntryForm } from '~/components/entry-form';
+import { getSession } from '~/session';
 
 export async function action({ request }: ActionFunctionArgs) {
   const db = new PrismaClient();
@@ -36,21 +41,25 @@ export async function action({ request }: ActionFunctionArgs) {
   return redirect('/');
 }
 
-export async function loader() {
-  const db = new PrismaClient();
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
 
+  const db = new PrismaClient();
   const entries = await db.entry.findMany();
 
   await db.$disconnect();
 
-  return entries.map((entry) => ({
-    ...entry,
-    date: entry.date.toISOString().substring(0, 10),
-  }));
+  return {
+    session: session.data,
+    entries: entries.map((entry) => ({
+      ...entry,
+      date: entry.date.toISOString().substring(0, 10),
+    })),
+  };
 }
 
 export default function Index() {
-  const entries = useLoaderData<typeof loader>();
+  const { session, entries } = useLoaderData<typeof loader>();
 
   const entriesByWeek = entries.reduce<Record<string, typeof entries>>(
     (memo, entry) => {
@@ -84,11 +93,13 @@ export default function Index() {
 
   return (
     <div>
-      <div className="my-8 border p-3">
-        <p className="italic">Create an entry</p>
+      {session.isAdmin && (
+        <div className="my-8 border p-3">
+          <p className="italic">Create an entry</p>
 
-        <EntryForm />
-      </div>
+          <EntryForm />
+        </div>
+      )}
 
       <div className="mt-12 space-y-12">
         {weeks.map((week) => (
@@ -138,7 +149,7 @@ export default function Index() {
 function EntryListItem({
   entry,
 }: {
-  entry: Awaited<ReturnType<typeof loader>>[number];
+  entry: Awaited<ReturnType<typeof loader>>['entries'][number];
 }) {
   return (
     <li className="group">
