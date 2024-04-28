@@ -83,7 +83,6 @@ export default function Index() {
           (entry) => entry.type === 'interesting-thing',
         ) ?? [],
     }));
-  console.log(weeks);
 
   useEffect(() => {
     if (fetcher.state === 'idle' && textareaRef.current) {
@@ -95,9 +94,9 @@ export default function Index() {
   return (
     <div>
       <div className="my-8 border p-3">
-        <fetcher.Form method="post">
-          <p className="italic">Create an entry</p>
+        <p className="italic">Create an entry</p>
 
+        <fetcher.Form method="post">
           <fieldset
             className="disabled:opacity-70"
             disabled={fetcher.state === 'submitting'}
