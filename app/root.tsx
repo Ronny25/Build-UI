@@ -1,16 +1,43 @@
 import {
+  Form,
+  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  redirect,
+  useLoaderData,
 } from '@remix-run/react';
-import type { LinksFunction } from '@remix-run/node';
+import type {
+  ActionFunctionArgs,
+  LinksFunction,
+  LoaderFunctionArgs,
+} from '@remix-run/node';
 import stylesheet from './tailwind.css?url';
+import { destroySession, getSession } from './session';
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: stylesheet }];
 };
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  return redirect('/', {
+    headers: {
+      'Set-Cookie': await destroySession(session),
+    },
+  });
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request.headers.get('Cookie'));
+
+  return {
+    session: session.data,
+  };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -31,12 +58,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { session } = useLoaderData<typeof loader>();
+
   return (
     <div className="p-10">
-      <h1 className="text-5xl">Work Journal</h1>
-      <p className="mt-2 text-lg text-gray-400">
-        Learnings and doings. Updated weekly.
-      </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-5xl">Work Journal</h1>
+          <p className="mt-2 text-lg text-gray-400">
+            Learnings and doings. Updated weekly.
+          </p>
+        </div>
+
+        {session.isAdmin ? (
+          <Form method="post">
+            <button>Logout</button>
+          </Form>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
+      </div>
       <Outlet />
     </div>
   );
