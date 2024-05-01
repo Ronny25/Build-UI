@@ -30,50 +30,54 @@ export function EntryForm({ entry }: Props) {
         className="disabled:opacity-70"
         disabled={fetcher.state !== 'idle'}
       >
-        <div className="mt-2">
-          <input
-            className="text-gray-700"
-            type="date"
-            name="date"
-            defaultValue={entry?.date ?? format(new Date(), 'yyyy-MM-dd')}
-            required
-          />
+        <div className="space-y-6">
+          <div>
+            <input
+              className="w-full rounded-md border-gray-700 bg-gray-800 text-white focus:border-sky-600 focus:ring-sky-600"
+              style={{ colorScheme: 'dark' }}
+              type="date"
+              name="date"
+              defaultValue={entry?.date ?? format(new Date(), 'yyyy-MM-dd')}
+              required
+            />
+          </div>
+
+          <div className="flex space-x-4 text-sm">
+            {[
+              { label: 'Work', value: 'work' },
+              { label: 'Learning', value: 'learning' },
+              { label: 'Interesting thing', value: 'interesting-thing' },
+            ].map(({ label, value }) => (
+              <label key={value} className="inline-block text-white">
+                <input
+                  className="mr-2 border-gray-700 bg-gray-800 text-sky-600 focus:ring-2 focus:ring-sky-600 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  type="radio"
+                  name="type"
+                  value={value}
+                  defaultChecked={value === (entry?.type ?? 'work')}
+                  required
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+
+          <div>
+            <textarea
+              ref={textareaRef}
+              className="w-full rounded-md border-gray-700 bg-gray-800 text-white focus:border-sky-600 focus:ring-sky-600"
+              name="text"
+              placeholder="Write your entry..."
+              defaultValue={entry?.text}
+              rows={3}
+              required
+            />
+          </div>
         </div>
 
-        <div className="mt-2 space-x-6">
-          {[
-            { label: 'Work', value: 'work' },
-            { label: 'Learning', value: 'learning' },
-            { label: 'Interesting thing', value: 'interesting-thing' },
-          ].map(({ label, value }) => (
-            <label key={value} className="inline-block">
-              <input
-                className="mr-1"
-                type="radio"
-                name="type"
-                value={value}
-                defaultChecked={value === (entry?.type ?? 'work')}
-                required
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-
-        <div className="mt-2">
-          <textarea
-            ref={textareaRef}
-            className="w-full text-gray-700"
-            name="text"
-            placeholder="Write your entry..."
-            defaultValue={entry?.text}
-            required
-          />
-        </div>
-
-        <div className="mt-1 text-right">
+        <div className="mt-6 text-right">
           <button
-            className="bg-blue-500 px-4 py-1 font-medium text-white"
+            className="w-full rounded-md bg-sky-600 px-3 py-2 font-medium text-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2 focus:ring-offset-gray-900"
             type="submit"
           >
             {fetcher.state !== 'idle' ? 'Saving...' : 'Save'}

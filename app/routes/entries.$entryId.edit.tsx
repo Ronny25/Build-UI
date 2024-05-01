@@ -102,15 +102,16 @@ export default function EditEntryPage() {
 
   return (
     <div className="mt-4">
-      <p>Editing entry {entry.id}</p>
-      <div className="mt-8">
+      <div className="my-8 rounded-lg border border-gray-700/30 bg-gray-800/50 p-4">
+        <p className="mb-4 text-sm font-medium text-gray-500">Edit entry</p>
+
         <EntryForm entry={entry} />
       </div>
 
       <div className="mt-8">
         <Form method="post" onSubmit={handleSubmit}>
           <button
-            className="text-gray-500 underline"
+            className="text-sm text-gray-600 underline"
             name="_action"
             value="delete"
           >
