@@ -47,23 +47,28 @@ export default function LoginPage() {
         <p>You&apos;re signed in!</p>
       ) : (
         <Form method="post">
-          <input
-            className="text-gray-900"
-            type="email"
-            name="email"
-            placeholder="Email"
-            required
-          />
-          <input
-            className="text-gray-900"
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-          />
-          <button className="bg-blue-500 px-3 py-2 font-medium text-white">
-            Log in
-          </button>
+          <div className="space-y-2">
+            <input
+              className="w-full rounded-md border-gray-700 bg-gray-800 text-white focus:border-sky-600 focus:ring-sky-600"
+              type="email"
+              name="email"
+              placeholder="Email"
+              required
+            />
+            <input
+              className="w-full rounded-md border-gray-700 bg-gray-800 text-white focus:border-sky-600 focus:ring-sky-600"
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+            />
+          </div>
+
+          <div className="mt-8">
+            <button className="w-full rounded-md bg-sky-600 px-3 py-2 font-medium text-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2 focus:ring-offset-gray-900">
+              Log in
+            </button>
+          </div>
 
           {actionData?.error && (
             <p className="mt-4 font-medium text-red-500">{actionData.error}</p>

@@ -56,7 +56,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get('Cookie'));
 
   const db = new PrismaClient();
-  const entries = await db.entry.findMany();
+  const entries = await db.entry.findMany({ orderBy: { date: 'desc' } });
 
   await db.$disconnect();
 
@@ -85,82 +85,47 @@ export default function Index() {
     {},
   );
 
-  const weeks = Object.keys(entriesByWeek)
-    .sort((a, b) => a.localeCompare(b))
-    .map((dateString) => ({
-      dateString,
-      work:
-        entriesByWeek[dateString]?.filter((entry) => entry.type === 'work') ??
-        [],
-      learnings:
-        entriesByWeek[dateString]?.filter(
-          (entry) => entry.type === 'learning',
-        ) ?? [],
-      interestingThings:
-        entriesByWeek[dateString]?.filter(
-          (entry) => entry.type === 'interesting-thing',
-        ) ?? [],
-    }));
+  const weeks = Object.keys(entriesByWeek).map((dateString) => ({
+    dateString,
+    work:
+      entriesByWeek[dateString]?.filter((entry) => entry.type === 'work') ?? [],
+    learnings:
+      entriesByWeek[dateString]?.filter((entry) => entry.type === 'learning') ??
+      [],
+    interestingThings:
+      entriesByWeek[dateString]?.filter(
+        (entry) => entry.type === 'interesting-thing',
+      ) ?? [],
+  }));
 
   return (
     <div>
       {session.isAdmin && (
-        <div className="my-8 border p-3">
-          <p className="italic">Create an entry</p>
+        <div className="my-8 rounded-lg border border-gray-700/30 bg-gray-800/50 p-4">
+          <p className="mb-4 text-sm font-medium text-gray-500">New entry</p>
 
           <EntryForm />
         </div>
       )}
 
-      <div className="mt-12 space-y-12">
+      <div className="mt-12 space-y-12 border-l-2 border-sky-500/[.15] pl-6">
         {weeks.map((week) => (
-          <div key={week.dateString}>
-            <p className="font-bold">
-              Week of {format(parseISO(week.dateString), 'MMMM do')}
+          <div key={week.dateString} className="relative">
+            <div className="absolute left-[-34px] rounded-full bg-gray-900 p-1">
+              <div className="h-[10px] w-[10px] rounded-full border border-sky-500 bg-gray-900" />
+            </div>
+
+            <p className="pt-[1px] text-xs font-semibold uppercase tracking-wider text-sky-500">
+              {format(parseISO(week.dateString), 'MMMM d, yyyy')}
             </p>
-            <div className="mt-3 space-y-4">
-              {week.work.length > 0 && (
-                <div>
-                  <p>Work</p>
-                  <ul className="ml-8 list-disc">
-                    {week.work.map((entry) => (
-                      <EntryListItem
-                        key={entry.id}
-                        entry={entry}
-                        canEdit={session.isAdmin}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {week.learnings.length > 0 && (
-                <div>
-                  <p>Learnings</p>
-                  <ul className="ml-8 list-disc">
-                    {week.learnings.map((entry) => (
-                      <EntryListItem
-                        key={entry.id}
-                        entry={entry}
-                        canEdit={session.isAdmin}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {week.interestingThings.length > 0 && (
-                <div>
-                  <p>Interesting things</p>
-                  <ul className="ml-8 list-disc">
-                    {week.interestingThings.map((entry) => (
-                      <EntryListItem
-                        key={entry.id}
-                        entry={entry}
-                        canEdit={session.isAdmin}
-                      />
-                    ))}
-                  </ul>
-                </div>
-              )}
+
+            <div className="mt-6 space-y-8">
+              <EntryList entries={week.work} label="Work" />
+              <EntryList entries={week.learnings} label="Learnings" />
+              <EntryList
+                entries={week.interestingThings}
+                label="Interesting things"
+              />
             </div>
           </div>
         ))}
@@ -169,21 +134,34 @@ export default function Index() {
   );
 }
 
-function EntryListItem({
-  entry,
-  canEdit,
-}: {
-  entry: Awaited<ReturnType<typeof loader>>['entries'][number];
-  canEdit: boolean;
-}) {
+type Entries = Awaited<ReturnType<typeof loader>>['entries'];
+
+function EntryList({ entries, label }: { entries: Entries; label: string }) {
   return (
-    <li className="group">
+    entries.length > 0 && (
+      <div>
+        <p className="font-semibold text-white">{label}</p>
+        <ul className="mt-6 space-y-6">
+          {entries.map((entry) => (
+            <EntryListItem key={entry.id} entry={entry} />
+          ))}
+        </ul>
+      </div>
+    )
+  );
+}
+
+function EntryListItem({ entry }: { entry: Entries[number] }) {
+  const { session } = useLoaderData<typeof loader>();
+
+  return (
+    <li className="group leading-7">
       {entry.text}
 
-      {canEdit && (
+      {session.isAdmin && (
         <Link
           to={`entries/${entry.id}/edit`}
-          className="ml-2 text-blue-500 opacity-0 group-hover:opacity-100"
+          className="ml-2 text-sky-500 opacity-0 group-hover:opacity-100"
         >
           Edit
         </Link>
