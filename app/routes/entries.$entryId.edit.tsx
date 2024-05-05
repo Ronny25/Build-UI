@@ -102,8 +102,10 @@ export default function EditEntryPage() {
 
   return (
     <div className="mt-4">
-      <div className="my-8 rounded-lg border border-gray-700/30 bg-gray-800/50 p-4">
-        <p className="mb-4 text-sm font-medium text-gray-500">Edit entry</p>
+      <div className="mb-8 rounded-lg border border-gray-700/30 bg-gray-800/50 p-4 lg:mb-20 lg:p-6">
+        <p className="mb-4 text-sm font-medium text-gray-500 lg:text-base">
+          Edit entry
+        </p>
 
         <EntryForm entry={entry} />
       </div>
