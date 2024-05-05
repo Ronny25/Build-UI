@@ -12,7 +12,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { email, password } = Object.fromEntries(formData);
 
-  if (email === 'test@gmail.com' && password === 'password') {
+  if (email === process.env.EMAIL && password === process.env.PASSWORD) {
     const session = await getSession();
     session.set('isAdmin', true);
 
