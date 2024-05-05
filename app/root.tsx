@@ -53,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="mx-auto max-w-xl p-4 lg:max-w-7xl">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -66,18 +66,18 @@ export default function App() {
   const { session } = useLoaderData<typeof loader>();
 
   return (
-    <div className="p-4">
+    <>
       <header>
-        <div className="flex justify-between text-sm">
-          <p className="uppercase">
+        <div className="flex items-center justify-between border-gray-800 lg:border-b lg:pb-5 lg:pt-1">
+          <p className="text-sm uppercase lg:text-lg">
             <span className="text-gray-500">Dmytro</span>
             <span className="font-semibold text-gray-200">Kotkin</span>
           </p>
 
-          <div className="text-gray-500">
+          <div className="text-sm font-medium text-gray-500 hover:text-gray-200">
             {session.isAdmin ? (
               <Form method="post">
-                <button>Logout</button>
+                <button>Log out</button>
               </Form>
             ) : (
               <Link to="/login">Log in</Link>
@@ -85,19 +85,22 @@ export default function App() {
           </div>
         </div>
 
-        <div className="my-20">
+        <div className="my-20 lg:my-28">
           <div className="text-center">
-            <h1 className="text-5xl font-semibold tracking-tighter text-white">
+            <h1 className="text-5xl font-semibold tracking-tighter text-white lg:text-7xl">
               <Link to="/">Work Journal</Link>
             </h1>
-            <p className="mt-2 tracking-tight text-gray-500">
+            <p className="mt-2 tracking-tight text-gray-500 lg:mt-4 lg:text-2xl">
               Doings and learnings. Updated weekly.
             </p>
           </div>
         </div>
       </header>
-      <Outlet />
-    </div>
+
+      <main className="mx-auto max-w-3xl">
+        <Outlet />
+      </main>
+    </>
   );
 }
 
