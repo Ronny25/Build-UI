@@ -54,8 +54,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const { _action, date, type, text } = Object.fromEntries(formData);
 
-  await new Promise((res) => setTimeout(res, 1000));
-
   if (_action === 'delete') {
     await db.entry.delete({
       where: { id: Number(params.entryId) },

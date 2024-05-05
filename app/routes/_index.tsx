@@ -36,8 +36,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await new Promise((res) => setTimeout(res, 1000));
-
     await db.entry.create({
       data: {
         date: new Date(date),
