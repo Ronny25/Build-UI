@@ -36,8 +36,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    await new Promise((res) => setTimeout(res, 1000));
-
     await db.entry.create({
       data: {
         date: new Date(date),
@@ -118,7 +116,7 @@ export default function Index() {
             </div>
 
             <p className="pt-[5px] text-xs font-semibold uppercase tracking-wider text-sky-500 lg:pt-[3px] lg:text-sm">
-              {format(parseISO(week.dateString), 'MMMM d, yyyy')}
+              Week of {format(parseISO(week.dateString), 'MMMM d, yyyy')}
             </p>
 
             <div className="mt-6 space-y-8 lg:space-y-12">
